@@ -3,13 +3,13 @@
 > **For agents:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build a skill composition library for reusable tool workflows with
-step planning, guardrails, and integration hooks.
+step planning, guardrails, and execution adapters.
 
 **Architecture:** Declarative skill definitions compiled into an execution plan
 that can be run via `toolrun`. Skill execution supports guards and optional
 telemetry hooks.
 
-**Tech Stack:** Go 1.24+, integrates with toolrun/toolset/toolobserve
+**Tech Stack:** Go 1.24+, integrates with toolrun/toolset/toolobserve.
 
 **Priority:** P3 (Phase 5 in the plan-of-record)
 
@@ -17,38 +17,54 @@ telemetry hooks.
 
 ## Context and Stack Alignment
 
-toolskill provides a higher-level capability layer built on top of existing
-execution and composition primitives:
-- `toolset` controls which tools are available
-- `toolrun` executes tool calls
-- `toolobserve` provides telemetry
+toolskill provides a higher-level workflow layer on top of:
+- `toolset` for curated tool availability
+- `toolrun` for executing steps
+- `toolobserve` for telemetry hooks
+
+It should remain declarative and deterministic.
 
 ---
 
-## Scope
+## Requirements
 
-### In scope
-- Skill definition model (steps, inputs, outputs)
-- Planner to resolve deterministic step order
-- Guards and policies (max steps, allowed tool IDs)
-- Execution adapter that delegates to `toolrun`
-- Unit tests for deterministic planning
-- Docs and examples
+### Functional
 
-### Out of scope
-- Workflow DSL or YAML parsing
-- Long-running state persistence
-- Retry/backoff orchestration (future)
+1. Declarative skill model with steps and bindings.
+2. Deterministic planner with stable ordering.
+3. Guards and policies to validate steps.
+4. Execution adapter delegating to `toolrun`.
+5. Structured result model per step.
+
+### Non-functional
+
+- No direct tool execution or network access.
+- Deterministic ordering for reproducible results.
+- Context propagation in all execution APIs.
 
 ---
 
-## Design Principles
+## API Model (Target)
 
-1. **Declarative skills**: define steps without embedding logic.
-2. **Deterministic planning**: stable, reproducible order.
-3. **Safe execution**: guardrails before/after steps.
-4. **Composable**: skills can call sub-skills.
-5. **Minimal dependencies**: rely on toolrun interfaces only.
+```go
+// Skill represents a declarative workflow.
+type Skill struct {
+    Name  string
+    Steps []Step
+}
+
+// Step references a tool and its bindings.
+type Step struct {
+    ID     string
+    ToolID string
+    Inputs map[string]any
+}
+
+// Guard validates a skill or step.
+type Guard interface {
+    Validate(skill Skill) error
+}
+```
 
 ---
 
@@ -74,60 +90,84 @@ toolskill/
 
 ---
 
-## API Shape (Conceptual)
-
-```go
-// Skill represents a declarative workflow.
-type Skill struct {
-    Name  string
-    Steps []Step
-}
-
-// Step references a tool and its bindings.
-type Step struct {
-    ID     string
-    ToolID string
-    Inputs map[string]any
-}
-```
-
----
-
-## Tasks (TDD)
+## TDD Task Breakdown (Detailed)
 
 ### Task 1 — Skill + Step Models
 
-- Define skill/step structures
-- Tests: deterministic serialization
+**Files:** `skill.go`, `step.go`, `*_test.go`
+
+**Tests:**
+- `TestSkill_SerializationDeterministic`
+- `TestStep_ValidatesToolID`
+
+**Commit:** `feat(toolskill): add skill and step models`
+
+---
 
 ### Task 2 — Planner
 
-- Resolve step order deterministically
-- Tests: stable ordering, dependency handling
+**Files:** `planner.go`, `planner_test.go`
+
+**Tests:**
+- `TestPlanner_DeterministicOrdering`
+- `TestPlanner_DetectsMissingSteps`
+
+**Commit:** `feat(toolskill): add deterministic planner`
+
+---
 
 ### Task 3 — Guards
 
-- Max steps, allowed tool IDs
-- Tests: guard failures are returned
+**Files:** `guard.go`, `guard_test.go`
+
+**Tests:**
+- `TestGuard_MaxSteps`
+- `TestGuard_AllowedToolIDs`
+
+**Commit:** `feat(toolskill): add guard policies`
+
+---
 
 ### Task 4 — Execution Adapter
 
-- Execute steps via `toolrun` interface
-- Tests: execution order, error propagation
+**Files:** `execute.go`, `execute_test.go`
+
+**Tests:**
+- `TestExecute_OrderPreserved`
+- `TestExecute_ErrorPropagation`
+- `TestExecute_ContextPropagation`
+
+**Commit:** `feat(toolskill): add execution adapter`
+
+---
 
 ### Task 5 — Docs + Examples
 
-- Update README and docs/index.md
-- Add Mermaid flow diagram
-- Add D2 component diagram in ai-tools-stack
+**Files:** `README.md`, `docs/index.md`, `docs/user-journey.md`
+
+**Acceptance:** Mermaid diagram and quick start examples included. Add D2
+component diagram in ai-tools-stack.
+
+**Commit:** `docs(toolskill): finalize documentation`
+
+---
+
+## PR Process
+
+1. Create branch: `feat/toolskill-<task>`
+2. Implement TDD task in isolation
+3. Run: `go test -race ./...`
+4. Commit with scoped message
+5. Open PR against `main`
+6. Merge after CI green
 
 ---
 
 ## Versioning and Propagation
 
-- **Source of truth**: `ai-tools-stack/go.mod`
-- **Version matrix**: `ai-tools-stack/VERSIONS.md` (auto-synced)
-- **Propagation**: `ai-tools-stack/scripts/update-version-matrix.sh --apply`
+- **Source of truth:** `ai-tools-stack/go.mod`
+- **Matrix:** `ai-tools-stack/VERSIONS.md` (auto-synced)
+- **Propagation:** `ai-tools-stack/scripts/update-version-matrix.sh --apply`
 - Tags: `vX.Y.Z` and `toolskill-vX.Y.Z`
 
 ---
@@ -141,8 +181,8 @@ type Step struct {
 
 ## Definition of Done
 
-- All TDD tasks complete with tests passing
+- All tasks complete with tests passing
 - `go test -race ./...` succeeds
-- Docs include quick start + diagrams
+- Docs + diagrams updated in ai-tools-stack
 - CI green
 - Version matrix updated after first release

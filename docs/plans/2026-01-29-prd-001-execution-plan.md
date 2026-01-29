@@ -12,11 +12,11 @@ integrates with toolrun for execution.
 ## TDD Methodology
 
 Each task follows strict TDD:
-1. Red — Write failing test
-2. Red verification — Run test, confirm failure
-3. Green — Minimal implementation
-4. Green verification — Run test, confirm pass
-5. Commit — One commit per task
+1. Red — write failing test
+2. Red verification — run test, confirm failure
+3. Green — minimal implementation
+4. Green verification — run test, confirm pass
+5. Commit — one commit per task
 
 ---
 
@@ -30,7 +30,8 @@ Commit:
 ## Task 1 — Skill + Step Models
 
 Tests:
-- Deterministic serialization
+- TestSkill_SerializationDeterministic
+- TestStep_ValidatesToolID
 
 Commit:
 - feat(toolskill): add skill and step models
@@ -40,30 +41,31 @@ Commit:
 ## Task 2 — Planner
 
 Tests:
-- Stable step ordering
-- Dependency handling (if present)
+- TestPlanner_DeterministicOrdering
+- TestPlanner_DetectsMissingSteps
 
 Commit:
-- feat(toolskill): add planner
+- feat(toolskill): add deterministic planner
 
 ---
 
 ## Task 3 — Guards
 
 Tests:
-- Max steps guard
-- Allowed tools guard
+- TestGuard_MaxSteps
+- TestGuard_AllowedToolIDs
 
 Commit:
-- feat(toolskill): add guards
+- feat(toolskill): add guard policies
 
 ---
 
 ## Task 4 — Execution Adapter
 
 Tests:
-- Execution order
-- Error propagation
+- TestExecute_OrderPreserved
+- TestExecute_ErrorPropagation
+- TestExecute_ContextPropagation
 
 Commit:
 - feat(toolskill): add execution adapter
@@ -89,7 +91,7 @@ Commit:
 ## Stack Integration
 
 1. Add ai-tools-stack component docs + D2 diagram
-2. Add mkdocs import for toolskill repo
+2. Add mkdocs multirepo import
 3. After first release, update version matrix
 
 ---
@@ -98,8 +100,8 @@ Commit:
 
 1. chore(toolskill): scaffold module and docs
 2. feat(toolskill): add skill and step models
-3. feat(toolskill): add planner
-4. feat(toolskill): add guards
+3. feat(toolskill): add deterministic planner
+4. feat(toolskill): add guard policies
 5. feat(toolskill): add execution adapter
 6. docs(toolskill): finalize documentation
 7. docs(ai-tools-stack): add toolskill component docs
