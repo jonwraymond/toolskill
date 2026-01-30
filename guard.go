@@ -6,6 +6,10 @@ var ErrMaxStepsExceeded = errors.New("toolskill: max steps exceeded")
 var ErrToolNotAllowed = errors.New("toolskill: tool id not allowed")
 
 // Guard validates a skill or step.
+//
+// Contract:
+// - Concurrency: implementations must be safe for concurrent use.
+// - Errors: validation failures must return non-nil error; must not panic.
 type Guard interface {
 	Validate(skill Skill) error
 }

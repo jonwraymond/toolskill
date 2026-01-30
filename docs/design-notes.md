@@ -18,3 +18,16 @@
 - `toolset`: curated tool availability
 - `toolobserve`: telemetry around skill execution
 - `metatools-mcp`: expose skills as higher-level capabilities
+
+## Interface Contracts
+
+### Runner
+
+- **Concurrency:** implementations are safe for concurrent use.
+- **Context:** honors cancellation/deadlines and returns `ctx.Err()` when canceled.
+- **Errors:** execution failures return non-nil error; no panic.
+
+### Guard
+
+- **Concurrency:** implementations are safe for concurrent use.
+- **Errors:** validation failures return non-nil error; no panic.

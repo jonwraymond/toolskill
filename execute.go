@@ -3,6 +3,11 @@ package toolskill
 import "context"
 
 // Runner executes a single step.
+//
+// Contract:
+// - Concurrency: implementations must be safe for concurrent use.
+// - Context: must honor cancellation/deadlines and return ctx.Err() when canceled.
+// - Errors: execution failures should be returned directly; callers may wrap.
 type Runner interface {
 	Run(ctx context.Context, step Step) (any, error)
 }
