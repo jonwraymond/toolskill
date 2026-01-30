@@ -34,11 +34,17 @@ toolset + toolrun + toolobserve --> toolskill --> metatools-mcp
 ## Quick Start
 
 ```go
-skill := toolskill.New("summarize-docs").
-    Step("search", "mcp:search").
-    Step("summarize", "mcp:summarize")
+skill := toolskill.Skill{
+    Name: "summarize-docs",
+    Steps: []toolskill.Step{
+        {ID: "search", ToolID: "mcp:search"},
+        {ID: "summarize", ToolID: "mcp:summarize"},
+    },
+}
 
-_ = skill
+plan, _ := toolskill.NewPlanner().Plan(skill)
+results, _ := toolskill.Execute(ctx, plan, runner)
+_ = results
 ```
 
 ## Versioning

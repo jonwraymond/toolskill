@@ -8,23 +8,29 @@ papers, extracts abstracts, and summarizes the result.
 ## Step 1: Define the skill
 
 ```go
-skill := toolskill.New("summarize-research").
-    Step("search", "mcp:search_papers").
-    Step("extract", "mcp:extract_abstracts").
-    Step("summarize", "mcp:summarize")
+skill := toolskill.Skill{
+    Name: "summarize-research",
+    Steps: []toolskill.Step{
+        {ID: "search", ToolID: "mcp:search_papers"},
+        {ID: "extract", ToolID: "mcp:extract_abstracts"},
+        {ID: "summarize", ToolID: "mcp:summarize"},
+    },
+}
 ```
 
 ## Step 2: Add a guard
 
 ```go
-skill = skill.WithGuard(toolskill.MaxSteps(5))
+guard := toolskill.MaxStepsGuard(5)
+_ = guard.Validate(skill)
 ```
 
 ## Step 3: Execute via toolrun
 
 ```go
+plan, _ := toolskill.NewPlanner().Plan(skill)
 executor := toolrun.NewExecutor(...)
-result, _ := toolskill.Execute(ctx, skill, executor)
+result, _ := toolskill.Execute(ctx, plan, executor)
 ```
 
 ## Flow Diagram
