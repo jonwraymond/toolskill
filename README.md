@@ -1,61 +1,28 @@
 # toolskill
 
-Skill composition primitives for reusable tool workflows.
+> **DEPRECATED**: This package has been merged into [toolcompose](https://github.com/jonwraymond/toolcompose).
+> Please use `github.com/jonwraymond/toolcompose/skill` instead.
+>
+> See [MIGRATION.md](./MIGRATION.md) for migration instructions.
 
-## Overview
+---
 
-toolskill defines a declarative model for composing tools into reusable skills:
-sequences, branching, and guardrails. It is orchestration-only: **no execution,
-no transport, no network I/O**. Execution is delegated to `toolrun`.
+## Migration
 
-## Design Goals
-
-1. Declarative skill definitions
-2. Deterministic step ordering
-3. Safe composition with policies/guards
-4. Integration with `toolset` and `toolobserve`
-5. Minimal dependencies
-
-## Position in the Stack
-
-```
-toolset + toolrun + toolobserve --> toolskill --> metatools-mcp
-```
-
-## Installation
+All functionality from `toolskill` is now available in the `skill` package within `toolcompose`:
 
 ```bash
-go get github.com/jonwraymond/toolskill
+go get github.com/jonwraymond/toolcompose
 ```
 
-## Quick Start
+Update your imports:
 
 ```go
-package main
+// Before
+import "github.com/jonwraymond/toolskill"
 
-import (
-    "context"
-    "fmt"
+// After
+import "github.com/jonwraymond/toolcompose/skill"
+```
 
-    "github.com/jonwraymond/toolskill"
-)
-
-type simpleRunner struct{}
-
-func (simpleRunner) Run(ctx context.Context, step toolskill.Step) (any, error) {
-    return step.ID + \"-ok\", nil
-}
-
-func main() {
-    skill := toolskill.Skill{
-        Name: \"summarize\",\n        Steps: []toolskill.Step{\n            {ID: \"search\", ToolID: \"mcp:search\"},\n            {ID: \"summarize\", ToolID: \"mcp:summarize\"},\n        },\n    }\n\n    plan, _ := toolskill.NewPlanner().Plan(skill)\n    results, _ := toolskill.Execute(context.Background(), plan, simpleRunner{})\n\n    for _, r := range results {\n        fmt.Println(r.StepID, r.Value)\n    }\n}\n```
-
-## Versioning
-
-toolskill follows semantic versioning aligned with the stack. The source of
-truth is `ai-tools-stack/go.mod`, and `VERSIONS.md` is synchronized across repos.
-
-## Next Steps
-
-- See `docs/index.md` for usage and design notes.
-- PRD and execution plan live in `docs/plans/`.
+This repository will no longer receive updates. Please migrate to `toolcompose/skill`.
